@@ -1,4 +1,4 @@
-package app.everless.learn_project.model;
+package app.everless.learn_project.Annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

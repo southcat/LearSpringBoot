@@ -1,6 +1,6 @@
 package app.everless.learn_project.utils;
 
-import app.everless.learn_project.model.TableFielId;
+import app.everless.learn_project.Annotation.TableFielId;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
