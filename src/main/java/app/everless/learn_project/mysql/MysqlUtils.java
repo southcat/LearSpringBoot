@@ -1,12 +1,21 @@
 package app.everless.learn_project.mysql;
 
 import app.everless.learn_project.utils.AnnotationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Map;
-
+@Component
 public class MysqlUtils {
-    public static <T> T excuteQuerySql(Class<T> clazz){
+    @Autowired
+    private MysqlConnectionPool mysqlConnectionPool;
+
+    public <T> T excuteQuerySql(T object,Class<T> clazz){
+
 //        构建对象的instance
         T instance = null;
         try {
@@ -31,9 +40,9 @@ public class MysqlUtils {
 //            获取到当前值
 
             try {
-                Field field = clazz.getDeclaredField(key);
+                Field field = object.getClass().getDeclaredField(key);
                 field.setAccessible(true);
-                Object o = field.get(instance);
+                Object o = field.get(object);
 
                 String s = "";
                 if (field.getType().equals(int.class) &&(int) o == 0){
@@ -50,16 +59,31 @@ public class MysqlUtils {
                     }
                 }
 
+
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
+        sql.append(" limit 1");
 //        执行sql语句
+        Connection connection = null;
+        try{
+            connection =mysqlConnectionPool.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+            preparedStatement.execute();
+            ResultSet metaData = preparedStatement.getResultSet();
+            while (metaData.next()){
+            System.out.println(metaData);
+            T t = AnnotationUtil.mapResultSetToEntity(metaData, clazz);
+            return t;
+            }
 
+        }catch (Exception e){
 
-
-
-
+            e.printStackTrace();
+        }finally {
+            mysqlConnectionPool.release(connection);
+        }
 
         return null;
 
