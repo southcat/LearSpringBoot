@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnnotationUtil {
+
+    //获取表字段和实体类字段的对应关系,通过注解获取，如果没有则会进行驼峰转换
     public static Map<String,String> getTableFiedIds(Class<?> clazz){
         Map<String,String> fieldMap = new HashMap<>();
         Field[] fields = clazz.getDeclaredFields();
@@ -16,13 +18,15 @@ public class AnnotationUtil {
             if (annotation != null){
                 fieldMap.put(field.getName(),annotation.value());
             }else{
-                fieldMap.put(field.getName(),"");
+                fieldMap.put(field.getName(),camelToUnderline(field.getName()));
             }
         }
         return fieldMap;
     }
 
 
+
+//map类型数据转向实体类
     public static <T> T mapResultSetToEntity(ResultSet resultSet, Class<T> clazz) throws Exception {
         T instance = clazz.getDeclaredConstructor().newInstance();
         Map<String, String> tableFiedIds = getTableFiedIds(clazz);
@@ -38,13 +42,14 @@ public class AnnotationUtil {
             }else{
                 field.set(instance,resultSet.getObject(camelToUnderline(fieldName)));
             }
-
         }
         return instance;
 
     }
 
-//    驼峰命名转换
+
+
+    //    驼峰命名转换
     public static String camelToUnderline(String param){
         if (param == null || "".equals(param.trim())){
             return "";
