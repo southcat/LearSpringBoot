@@ -1,6 +1,7 @@
 package app.everless.learn_project.mysql;
 
 import app.everless.learn_project.utils.AnnotationUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +9,9 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
+@Slf4j
 @Component
 public class MysqlUtils {
     @Autowired
@@ -65,7 +68,7 @@ public class MysqlUtils {
             }
         }
         sql.append(" limit 1");
-        System.out.println(sql);
+        log.info(String.valueOf(sql));
 //        执行sql语句
         Connection connection = null;
         try{
@@ -83,7 +86,11 @@ public class MysqlUtils {
 
             e.printStackTrace();
         }finally {
-            mysqlConnectionPool.release(connection);
+            try {
+                mysqlConnectionPool.release(connection);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return null;
