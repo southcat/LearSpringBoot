@@ -1,6 +1,7 @@
 package app.everless.learn_project.mysql;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Vector;
 
+@Slf4j
 public class MysqlConnectionPool {
     private String url;
     private String username;
@@ -18,6 +20,7 @@ public class MysqlConnectionPool {
     private String driverClassName;
     private Vector<Connection> connectionPool = new Vector<Connection>();
     private int poolSize = 10;
+    private int maxPoolSize = 20;
 //    初始化创建池连接
 
     public MysqlConnectionPool(String url, String username, String password, String driverClassName){
@@ -42,17 +45,24 @@ public class MysqlConnectionPool {
         }
     }
 
-    public synchronized Connection getConnection(){
+    public synchronized Connection getConnection() throws SQLException {
         if (!connectionPool.isEmpty()){
             Connection connection = connectionPool.getFirst();
             connectionPool.removeFirst();
             return connection;
         }else {
-         throw  new RuntimeException("连接池目前已满");
+            return  DriverManager.getConnection(url, username, password);
         }
     }
-    public synchronized void release(Connection connection){
-        connectionPool.add(connection);
+    public synchronized void release(Connection connection) throws SQLException {
+        if (connectionPool.size()<maxPoolSize){
+            connectionPool.add(connection);
+        }else {
+            connection.close();
+            log.info("达到连接池上限关闭链接");
+        }
+
+
     }
 
 

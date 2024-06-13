@@ -65,6 +65,7 @@ public class MysqlUtils {
             }
         }
         sql.append(" limit 1");
+        System.out.println(sql);
 //        执行sql语句
         Connection connection = null;
         try{
